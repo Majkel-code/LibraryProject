@@ -1,14 +1,22 @@
+import os
 class Library:
 
-    def __init__(self, books=[], users=[]):
-        self.books = books
-        self.users = users
+    def __init__(self):
+        self.books = []
+        self.users = []
         self.registry = {}
-        # 'name': status
-        # setup()
 
-    def setup(self):
-        pass
+
+    def setup(self, path):
+        if os.path.exists("C:/Users/micha/Documents/Python/PytonMentoring/books.txt") and os.path.exists("C:/Users/micha/Documents/Python/PytonMentoring/users.txt"):
+            print("Library successful loaded! ")
+            self.books = open("books.txt").read().split()
+            print(self.books)
+            self.users = open("users.txt").read().split()
+            print(self.users)
+
+        else:
+            print("Library doesn't exist! ")
 
     # sprawdz czy pliki books.txt i users.txt istnieją w folderze x
     # jesli tak to zczytaj books i users do atrybutów
@@ -38,8 +46,13 @@ class Library:
     def register_user(self, user_name):
         if user_name not in self.users:
             self.users.append(user_name)
+            with open("users.txt", "a") as f:
+                f.write(f"{user_name}\n")
+            print(f"User '{user_name}' successful added to user database")
+            return
         else:
-            print("User with this nickname is already registered!")
+            user_name = input(f"'{user_name}' is taken. Try Again! ")
+            self.register_user(user_name)
 
         # with open user_file:
         # dopisz nowego goscia
@@ -47,8 +60,20 @@ class Library:
     def add_new_book(self, book_name):
         if book_name not in self.books and self.registry.values() != book_name:
             self.books.append(book_name)
+            with open("books.txt", "a") as f:
+                f.write(f"{book_name}\n")
+            print(f"Book '{book_name}' successful added to library! ")
         else:
-            print("This book is alredy in Library data base")
+            print(f"This book '{book_name}' is alredy in Library data base")
 
         # with open books_file:
         # add new line
+
+lib = Library()
+path = "C:/Users/micha/Documents/Python/PytonMentoring"
+lib.setup(path)
+lib.add_new_book("Book1")
+lib.register_user("Michal")
+
+print(lib.users)
+print(lib.books)
