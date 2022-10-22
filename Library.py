@@ -31,24 +31,38 @@ class Library:
     # jesli tak to zczytaj books i users do atrybutów
     # jesli nie to komunikat, biblioteka pusta
 
-    def borrow(self, user,password, book):
+    def borrow(self, user, password, book):
         if user in self.users and self.users[int(self.users.index(user) + 1)] == password:
             if self.available_books(book):
                 self.registry.append(f"{user}={book}")
                 with open("registry.txt","a") as f:
                     f.write(f"{user}={book}\n")
                 self.books.remove(book)
-                with open("books.txt", "r") as f:
+                self.books.append(f"{book}Taken")
+                with open("books.txt", "r+") as f:
                     file_data = f.read()
-                    file_data = file_data.replace(book, f"{user}={book}")
+                    file_data = file_data.replace(book, f"{book}Taken")
                     with open("books.txt", "w") as f:
                         f.write(file_data)
                 print(f"{user} just borrow book: {book}")
+        else:
+            print("Invalid inputs! ")
 
-    def deposit(self, user, book):
-        if self.registry[user] == book:
-            self.registry[user] = ""
+    def deposit(self, user, password, book):
+        if user in self.users and self.users[int(self.users.index(user)+1)] == password and f"{user}={book}" in self.registry:
+            self.books.remove(f"{book}Taken")
             self.books.append(book)
+            with open("books.txt", "r") as f:
+                file_data = f.read()
+                file_data = file_data.replace(f"{book}Taken", book)
+                with open("books.txt", "w") as f:
+                    f.write(file_data)
+            self.registry.remove(f"{user}={book}")
+            with open("registry.txt", "r") as f:
+                file_data = f.read()
+                file_data = file_data.replace(f"{user}={book}", "")
+                with open("registry.txt", "w") as f:
+                    f.write(file_data)
             print(f"{user} just deposit book: {book}")
         else:
             print(f"{user} do not have book: {book}")
@@ -81,14 +95,14 @@ class Library:
     def add_new_book(self):
         book_name = input("Input book title (CamelCase): ")
         while book_name.lower() != "x":
-            if book_name not in self.books and book_name not in self.registry and " " not in book_name:
+            if f"{book_name}Taken" not in self.books and book_name not in self.books and " " not in book_name:
                 self.books.append(book_name)
                 with open("books.txt", "a") as f:
                     f.write(f"{book_name}\n")
                 print(f"Book '{book_name}' successful added to library! ")
                 self.add_new_book()
             else:
-                print(f"This book '{book_name}' is alredy in Library data base")
+                print(f"This book '{book_name}' is alredy in Library or have invalid title")
                 self.add_new_book()
             break
 
@@ -106,6 +120,9 @@ while True:
         lib.register_user(user_name, user_password)
     elif choice == "b":
         lib.borrow(user=input("Input username: "),password=input("Input user password: "), book=input("Input book title to borrow: "))
+    elif choice == "d":
+        lib.deposit(user=input("Input username: "), password=input("Input user password: "),
+                   book=input("Input book title to deposit: "))
     elif choice == "e":
         break
 
