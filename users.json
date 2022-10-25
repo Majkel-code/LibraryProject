@@ -1,0 +1,19 @@
+{
+    "users": [
+        {
+            "login": "oskar",
+            "password": "qwerty"
+        },
+        {
+            "login": "admin",
+            "password": "admin"
+        }
+    ],
+    "books": [
+        {
+            "title": "book1",
+            "author": "asd",
+            "pages": 123
+        }
+    ]
+}

@@ -1,11 +1,11 @@
 import os
-class Library:
 
+
+class Library:
     def __init__(self):
         self.books = []
         self.users = []
         self.registry = []
-
 
     def setup(self):
         # warunek powinien być oddzielnie dla userów i książek
@@ -15,14 +15,11 @@ class Library:
             # zawsze używaj 'with open' !
             # a jak już musisz open to pamiętaj o close
             self.books = open("books.txt").read().split()
-            # PRINT TESTOWY!!!
             print(self.books)
             self.users = open("users.txt").read().split()
-            # PRINT TESTOWY!!!
             print(self.users)
             # U mnie wysypało sie na registry :(
             self.registry = open("registry.txt").read().split()
-            # PRINT TESTOWY!!!
             print(self.registry)
 
         else:
@@ -43,21 +40,21 @@ class Library:
             if self.available_books(book):
                 # tak samo rejestr, lepiej żeby to byl dict
                 self.registry.append(f"{user}={book}")
-                with open("registry.txt","a") as f:
+                with open("registry.txt", "a") as f:
                     f.write(f"{user}={book}\n")
                 self.books.remove(book)
-                self.books.append(f"{book}Taken")# ??
-                with open("books.txt", "r+") as f:#??
+                self.books.append(f"{book}Taken")  # ??
+                with open("books.txt", "r+") as f:  # ??
                     file_data = f.read()
                     file_data = file_data.replace(book, f"{book}Taken")
-                    with open("books.txt", "w") as f: # :O ??
-                        f.write(file_data)
+                with open("books.txt", "w") as f:  # :O ??
+                     f.write(file_data)
                 print(f"{user} just borrow book: {book}")
         else:
             print("Invalid inputs! ")
 
     def deposit(self, user, password, book):
-        if user in self.users and self.users[int(self.users.index(user)+1)] == password and f"{user}={book}" in self.registry:
+        if user in self.users and self.users[int(self.users.index(user) + 1)] == password and f"{user}={book}" in self.registry:
             self.books.remove(f"{book}Taken")
             self.books.append(book)
             with open("books.txt", "r") as f:
@@ -100,7 +97,6 @@ class Library:
                 user_password = input(f"'{user_password}' is taken. Try again: ")
                 self.register_user(user_name, user_password)
 
-
     def add_new_book(self):
         # Info jak wyjść z tej petli w input message
         book_name = input("Input book title (CamelCase): ")
@@ -119,7 +115,7 @@ class Library:
 
 lib = Library()
 # można tu zmienić na current_working_directory żeby działało każdemu od razu
-#path = "C:\\Users\\orokitax\\python-mentoring\\PytonMentoring"
+# path = "C:\\Users\\orokitax\\python-mentoring\\PytonMentoring"
 path = os.getcwd()
 lib.setup()
 while True:
@@ -131,10 +127,11 @@ while True:
         user_password = input("Input password: ")
         lib.register_user(user_name, user_password)
     elif choice == "b":
-        lib.borrow(user=input("Input username: "),password=input("Input user password: "), book=input("Input book title to borrow: "))
+        lib.borrow(user=input("Input username: "), password=input("Input user password: "),
+                   book=input("Input book title to borrow: "))
     elif choice == "d":
         lib.deposit(user=input("Input username: "), password=input("Input user password: "),
-                   book=input("Input book title to deposit: "))
+                    book=input("Input book title to deposit: "))
     elif choice == "e":
         break
 
