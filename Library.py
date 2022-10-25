@@ -8,14 +8,19 @@ class Library:
 
 
     def setup(self):
-        if os.path.exists("C:/Users/micha/Documents/Python/PytonMentoring/books.txt") and os.path.exists("C:/Users/micha/Documents/Python/PytonMentoring/users.txt"):
+        # warunek powinien być oddzielnie dla userów i książek
+        cwd = os.getcwd()
+        if os.path.exists(f"{cwd}\\books.txt") and os.path.exists(f"{cwd}\\users.txt"):
             print("Library successful loaded! ")
+            # zawsze używaj 'with open' !
+            # a jak już musisz open to pamiętaj o close
             self.books = open("books.txt").read().split()
             # PRINT TESTOWY!!!
             print(self.books)
             self.users = open("users.txt").read().split()
             # PRINT TESTOWY!!!
             print(self.users)
+            # U mnie wysypało sie na registry :(
             self.registry = open("registry.txt").read().split()
             # PRINT TESTOWY!!!
             print(self.registry)
@@ -32,17 +37,20 @@ class Library:
     # jesli nie to komunikat, biblioteka pusta
 
     def borrow(self, user, password, book):
+        # jeśli pole users byłoby słownikiem łatiwej byłoby o dostęp po kluczach 'login' , 'password'
+        # zamiast szukać jakiś indexów dziwnych
         if user in self.users and self.users[int(self.users.index(user) + 1)] == password:
             if self.available_books(book):
+                # tak samo rejestr, lepiej żeby to byl dict
                 self.registry.append(f"{user}={book}")
                 with open("registry.txt","a") as f:
                     f.write(f"{user}={book}\n")
                 self.books.remove(book)
-                self.books.append(f"{book}Taken")
-                with open("books.txt", "r+") as f:
+                self.books.append(f"{book}Taken")# ??
+                with open("books.txt", "r+") as f:#??
                     file_data = f.read()
                     file_data = file_data.replace(book, f"{book}Taken")
-                    with open("books.txt", "w") as f:
+                    with open("books.txt", "w") as f: # :O ??
                         f.write(file_data)
                 print(f"{user} just borrow book: {book}")
         else:
@@ -65,6 +73,7 @@ class Library:
                     f.write(file_data)
             print(f"{user} just deposit book: {book}")
         else:
+            # Albo hasło jest nieprawidłowe
             print(f"{user} do not have book: {book}")
 
     def available_books(self, book):
@@ -93,6 +102,7 @@ class Library:
 
 
     def add_new_book(self):
+        # Info jak wyjść z tej petli w input message
         book_name = input("Input book title (CamelCase): ")
         while book_name.lower() != "x":
             if f"{book_name}Taken" not in self.books and book_name not in self.books and " " not in book_name:
@@ -108,7 +118,9 @@ class Library:
 
 
 lib = Library()
-path = "C:/Users/micha/Documents/Python/PytonMentoring"
+# można tu zmienić na current_working_directory żeby działało każdemu od razu
+#path = "C:\\Users\\orokitax\\python-mentoring\\PytonMentoring"
+path = os.getcwd()
 lib.setup()
 while True:
     choice = input("r = register / a = add new book / d = deposit / b = borrow / e = END ")
