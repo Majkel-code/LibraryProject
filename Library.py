@@ -1,35 +1,31 @@
 import os
+import json
 class Library:
 
     def __init__(self):
-        self.books = []
-        self.users = []
+        self.books = {"books": {}}
+        self.users = {"users": {}}
         self.registry = []
 
 
     def setup(self):
-        if os.path.exists("C:/Users/micha/Documents/Python/PytonMentoring/books.txt") and os.path.exists("C:/Users/micha/Documents/Python/PytonMentoring/users.txt"):
-            print("Library successful loaded! ")
-            self.books = open("books.txt").read().split()
-            # PRINT TESTOWY!!!
-            print(self.books)
-            self.users = open("users.txt").read().split()
-            # PRINT TESTOWY!!!
-            print(self.users)
-            self.registry = open("registry.txt").read().split()
-            # PRINT TESTOWY!!!
-            print(self.registry)
-
+        cwd = os.getcwd()
+        if os.path.exists(f"{cwd}\\books.json"):
+            with open("books.json", "r") as f:
+                self.books = json.load(f)
         else:
-            print("Missing some database, Creating new one... ")
-            open("books.txt", "a")
-            open("users.txt", "a")
-            open("registry.txt", "a")
-            self.setup()
+            with open("books.json", "a") as f:
+                f.write(json.dumps(self.books))
 
-    # sprawdz czy pliki books.txt i users.txt istnieją w folderze x
-    # jesli tak to zczytaj books i users do atrybutów
-    # jesli nie to komunikat, biblioteka pusta
+        if os.path.exists(f"{cwd}\\users.json"):
+            with open("books.json", "r") as f:
+                self.users = json.load(f)
+        else:
+            with open("users.json", "a") as f:
+                f.write(json.dumps(self.users))
+        print("Library successful loaded! ")
+        print(self.books)
+        print(self.users)
 
     def borrow(self, user, password, book):
         if user in self.users and self.users[int(self.users.index(user) + 1)] == password:
@@ -75,31 +71,35 @@ class Library:
             return False
 
     def register_user(self, user_name, user_password):
-        if user_name not in self.users and user_password not in self.users:
-            self.users.append(user_name)
-            self.users.append(user_password)
-            with open("users.txt", "a") as f:
-                f.write(f"{user_name}\n")
-                f.write(f"{user_password}\n")
-            print(f"User '{user_name}' successful added to user database")
-            return
+        available_password = True
+        for i in self.users["users"]:
+            if self.users["users"][i] == user_password:
+                available_password = False
+        if user_name not in self.users["users"] and available_password:
+            self.users["users"].update({user_name: user_password})
+            with open("users.json", "w") as f:
+                f.write(json.dumps(self.users))
+            print("User successful register! ")
+            print(self.users)
         else:
-            if user_name in self.users:
+            if user_name in self.users["users"]:
                 user_name = input(f"'{user_name}' is taken. Try Again! ")
                 self.register_user(user_name, user_password)
-            elif user_password in self.users:
+            elif not available_password:
                 user_password = input(f"'{user_password}' is taken. Try again: ")
                 self.register_user(user_name, user_password)
 
 
     def add_new_book(self):
-        book_name = input("Input book title (CamelCase): ")
+        book_name = input("Input book title (CamelCase): -to close input 'x'  ")
         while book_name.lower() != "x":
-            if f"{book_name}Taken" not in self.books and book_name not in self.books and " " not in book_name:
-                self.books.append(book_name)
-                with open("books.txt", "a") as f:
-                    f.write(f"{book_name}\n")
-                print(f"Book '{book_name}' successful added to library! ")
+            if book_name not in self.books["books"]:
+                book_author = input("Input book Author: ")
+                book_pages = input("Input book pages: ")
+                self.books['books'].update({book_name: [book_author, book_pages]})
+                with open("books.json", "w") as f:
+                    f.write(json.dumps(self.books))
+                print(f"Title:'{book_name}', Author:'{book_author}', pages:'{book_pages}' - successful added to Library")
                 self.add_new_book()
             else:
                 print(f"This book '{book_name}' is alredy in Library or have invalid title")
@@ -108,7 +108,6 @@ class Library:
 
 
 lib = Library()
-path = "C:/Users/micha/Documents/Python/PytonMentoring"
 lib.setup()
 while True:
     choice = input("r = register / a = add new book / d = deposit / b = borrow / e = END ")
