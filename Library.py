@@ -5,7 +5,7 @@ class Library:
     def __init__(self):
         self.books = {"books": {}}
         self.users = {"users": {}}
-        self.registry = []
+        self.registry = {"registry": {}}
 
 
     def setup(self):
@@ -18,64 +18,68 @@ class Library:
                 f.write(json.dumps(self.books))
 
         if os.path.exists(f"{cwd}\\users.json"):
-            with open("books.json", "r") as f:
+            with open("users.json", "r") as f:
                 self.users = json.load(f)
         else:
             with open("users.json", "a") as f:
                 f.write(json.dumps(self.users))
+
+        if os.path.exists(f"{cwd}\\registry.json"):
+            with open("registry.json", "r") as f:
+                self.registry = json.load(f)
+        else:
+            with open("registry.json", "a") as f:
+                f.write(json.dumps(self.registry))
         print("Library successful loaded! ")
         print(self.books)
         print(self.users)
+        print(self.registry)
 
     def borrow(self, user, password, book):
-        if user in self.users and self.users[int(self.users.index(user) + 1)] == password:
+        if user in self.users["users"] and password in self.users["users"][user]:
             if self.available_books(book):
-                self.registry.append(f"{user}={book}")
-                with open("registry.txt","a") as f:
-                    f.write(f"{user}={book}\n")
-                self.books.remove(book)
-                self.books.append(f"{book}Taken")
-                with open("books.txt", "r+") as f:
-                    file_data = f.read()
-                    file_data = file_data.replace(book, f"{book}Taken")
-                    with open("books.txt", "w") as f:
-                        f.write(file_data)
-                print(f"{user} just borrow book: {book}")
+                self.books["books"][book].append("BORROWED")
+                with open("books.json", "w") as f:
+                    f.write(json.dumps(self.books))
+                self.registry['registry'].update({user: book})
+                with open("registry.json", "w") as f:
+                    f.write(json.dumps(self.registry))
+                    print(f"{user} just borrow book: {book}")
+            else:
+                print(f"{user} do not have book: {book}")
         else:
-            print("Invalid inputs! ")
+            print(f"Username or password is incorrect, Try again ")
 
     def deposit(self, user, password, book):
-        if user in self.users and self.users[int(self.users.index(user)+1)] == password and f"{user}={book}" in self.registry:
-            self.books.remove(f"{book}Taken")
-            self.books.append(book)
-            with open("books.txt", "r") as f:
-                file_data = f.read()
-                file_data = file_data.replace(f"{book}Taken", book)
-                with open("books.txt", "w") as f:
-                    f.write(file_data)
-            self.registry.remove(f"{user}={book}")
-            with open("registry.txt", "r") as f:
-                file_data = f.read()
-                file_data = file_data.replace(f"{user}={book}", "")
-                with open("registry.txt", "w") as f:
-                    f.write(file_data)
-            print(f"{user} just deposit book: {book}")
+        if user in self.users["users"] and password in self.users["users"][user]:
+            if user in self.registry["registry"] and book in self.registry["registry"][user]:
+                self.books["books"][book].remove("BORROWED")
+                with open("books.json", "w") as f:
+                    f.write(json.dumps(self.books))
+                self.registry['registry'].update({user: ""})
+                with open("registry.json", "w") as f:
+                    f.write(json.dumps(self.registry))
+                print(f"{user} just deposit book: {book}")
+            else:
+                print(f"{user} do not have book: {book}")
         else:
-            print(f"{user} do not have book: {book}")
+            print(f"Username or password is incorrect, Try again ")
 
     def available_books(self, book):
-        if book in self.books:
+        if book in self.books["books"] and "BORROWED" not in self.books["books"][book]:
             return True
         else:
             print("This book is already borrowed!")
             return False
 
-    def register_user(self, user_name, user_password):
-        available_password = True
+    def password_available(self,user_password):
         for i in self.users["users"]:
             if self.users["users"][i] == user_password:
-                available_password = False
-        if user_name not in self.users["users"] and available_password:
+                return False
+        return True
+
+    def register_user(self, user_name, user_password):
+        if user_name not in self.users["users"] and self.password_available(user_password):
             self.users["users"].update({user_name: user_password})
             with open("users.json", "w") as f:
                 f.write(json.dumps(self.users))
@@ -85,7 +89,7 @@ class Library:
             if user_name in self.users["users"]:
                 user_name = input(f"'{user_name}' is taken. Try Again! ")
                 self.register_user(user_name, user_password)
-            elif not available_password:
+            elif not self.password_available(user_password):
                 user_password = input(f"'{user_password}' is taken. Try again: ")
                 self.register_user(user_name, user_password)
 
