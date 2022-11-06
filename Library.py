@@ -15,26 +15,31 @@ class Library:
             with open("database.json", "a") as f:
                 f.write(json.dumps(self.database))
 
-    def available_books_to_borrow(self):
+    def available_books_to_borrow(self, books):
         print("Books available to borrow:")
         for i in self.database["books"]:
             if i["borrow"] == "No":
                 print(i["title"])
+                books.append(i["title"])
             else:
                 pass
 
     def borrow(self, user):
-        self.available_books_to_borrow()
-        book = input("Which book you want to borrow: ")
-        for i in self.database["books"]:
-            if i["title"] == book:
-                i["borrow"] = "Yes"
-                with open("database.json", "w") as f:
-                    f.write(json.dumps(self.database))
-                self.database['registry'].append({'user': user, 'book': book})
-                with open("database.json", "w") as f:
-                    f.write(json.dumps(self.database))
-                print(f"{user} just borrow book: {book}")
+        books = []
+        self.available_books_to_borrow(books)
+        if len(books) > 0:
+            book = input("Which book you want to borrow: ")
+            for i in self.database["books"]:
+                if i["title"] == book:
+                    i["borrow"] = "Yes"
+                    with open("database.json", "w") as f:
+                        f.write(json.dumps(self.database))
+                    self.database['registry'].append({'user': user, 'book': book})
+                    with open("database.json", "w") as f:
+                        f.write(json.dumps(self.database))
+                    print(f"{user} just borrow book: {book}")
+        else:
+            print("Library is empty, 'admin' should deliver new books or wait maybe some user will return book :) ")
 
     def available_books_to_deposit(self, user, books):
         print("Books available to deposit:")
@@ -48,20 +53,24 @@ class Library:
     def deposit(self, user):
         books = []
         self.available_books_to_deposit(user, books)
-        book = input("Which book you want to return: ")
-        if book in books:
-            for i in self.database["registry"]:
-                self.database["registry"].remove(i)
-            for b in self.database["books"]:
-                if b["title"] == book:
-                    b["borrow"] = "No"
-            with open("database.json", "w") as f:
-                f.write(json.dumps(self.database))
-                print(f"{user} just deposit book: {book}")
-        else:
-            print(f"You don't have book: {book}")
+        if len(books) > 0:
             book = input("Which book you want to return: ")
-            self.deposit(user)
+            if book in books:
+                for i in self.database["registry"]:
+                    if i["book"] == book:
+                        self.database["registry"].remove(i)
+                for b in self.database["books"]:
+                    if b["title"] == book:
+                        b["borrow"] = "No"
+                with open("database.json", "w") as f:
+                    f.write(json.dumps(self.database))
+                    print(f"{user} just deposit book: {book}")
+            else:
+                print(f"You don't have book: {book}")
+                book = input("Which book you want to return: ")
+                self.deposit(user)
+        else:
+            print("You don't have any book, please borrow some first :) ")
 
     def user_log_in(self, login, password):
         if login != "" and password != "":
