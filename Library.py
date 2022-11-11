@@ -1,19 +1,29 @@
 import os
 import json
-class Library:
 
+
+class Library:
     def __init__(self):
         self.database = {"books": [], "users": [{"login": "admin", "password": "admin"}], "registry": []}
-
+        self.setup()
 
     def setup(self):
         cwd = os.getcwd()
         if os.path.exists(f"{cwd}\\database.json"):
+            print("Library successful loaded! ")
             with open("database.json", "r") as f:
                 self.database = json.load(f)
+            print(self.database)
         else:
             with open("database.json", "a") as f:
                 f.write(json.dumps(self.database))
+                print(self.database)
+                print(type(self.database))
+        print(self.database["users"])
+
+    def open_json_file(self):
+        with open("database.json", "w") as f:
+            f.write(json.dumps(self.database))
 
     def available_books_to_borrow(self, books):
         print("Books available to borrow:")
@@ -23,20 +33,18 @@ class Library:
                 books.append(i["title"])
             else:
                 pass
+        return books
 
     def borrow(self, user):
         books = []
-        self.available_books_to_borrow(books)
-        if len(books) > 0:
+        if self.available_books_to_borrow(books):
             book = input("Which book you want to borrow: ")
             for i in self.database["books"]:
                 if i["title"] == book:
                     i["borrow"] = "Yes"
-                    with open("database.json", "w") as f:
-                        f.write(json.dumps(self.database))
+                    self.open_json_file()
                     self.database['registry'].append({'user': user, 'book': book})
-                    with open("database.json", "w") as f:
-                        f.write(json.dumps(self.database))
+                    self.open_json_file()
                     print(f"{user} just borrow book: {book}")
         else:
             print("Library is empty, 'admin' should deliver new books or wait maybe some user will return book :) ")
@@ -49,11 +57,11 @@ class Library:
                 books.append(i["book"])
             else:
                 pass
+        return books
 
     def deposit(self, user):
         books = []
-        self.available_books_to_deposit(user, books)
-        if len(books) > 0:
+        if self.available_books_to_deposit(user, books):
             book = input("Which book you want to return: ")
             if book in books:
                 for i in self.database["registry"]:
@@ -62,9 +70,8 @@ class Library:
                 for b in self.database["books"]:
                     if b["title"] == book:
                         b["borrow"] = "No"
-                with open("database.json", "w") as f:
-                    f.write(json.dumps(self.database))
-                    print(f"{user} just deposit book: {book}")
+                self.open_json_file()
+                print(f"{user} just deposit book: {book}")
             else:
                 print(f"You don't have book: {book}")
                 book = input("Which book you want to return: ")
@@ -74,28 +81,27 @@ class Library:
 
     def user_log_in(self, login, password):
         if login != "" and password != "":
-            for i in self.database["users"]:
-                if login == i["login"] and password == i["password"]:
+            for user in self.database["users"]:
+                if login == user["login"] and password == user["password"]:
                     return True
             return False
 
-    def login_available(self, user_name):
-        for i in self.database["users"]:
-            if i["login"] == user_name:
+    def password_available(self, user_password):
+        for user in self.database["users"]:
+            if user["password"] == user_password:
                 return False
         return True
 
-    def password_available(self, user_password):
-        for i in self.database["users"]:
-            if i["password"] == user_password:
+    def login_available(self, user_name):
+        for user in self.database["users"]:
+            if user["login"] == user_name:
                 return False
         return True
 
     def register_user(self, user_name, user_password):
         if self.login_available(user_name) and self.password_available(user_password):
             self.database["users"].append({"login": user_name, "password": user_password})
-            with open("database.json", "w") as f:
-                f.write(json.dumps(self.database))
+            self.open_json_file()
             print("User successful register! ")
             print(self.database)
         else:
@@ -119,12 +125,13 @@ class Library:
             if self.can_be_add(book_name):
                 book_author = input("Input book Author: ")
                 book_pages = input("Input book pages: ")
-                self.database['books'].append(
-                    {"title": book_name, "author": book_author, "pages": book_pages, "borrow": "No"})
+
+                self.database['books'].append({"title": book_name, "author": book_author, "pages": book_pages, "borrow": "No"})
                 print(self.database)
-                with open("database.json", "w") as f:
-                    f.write(json.dumps(self.database))
+                self.open_json_file()
+
                 print(f"Title:'{book_name}', Author:'{book_author}', pages:'{book_pages}' - successful added to Library")
+
                 self.add_new_book()
             else:
                 print(f"This book '{book_name}' is already in Library or have invalid title")
@@ -133,7 +140,6 @@ class Library:
 
 
 lib = Library()
-lib.setup()
 while True:
     log_in = input("Login = l / Register = r ").lower()
     if log_in == "l":
