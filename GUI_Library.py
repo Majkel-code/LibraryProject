@@ -29,7 +29,6 @@ class GUI_main_page():
 
         def register():
 
-
             def message(info_return):
                 popup = Toplevel(register_page)
                 popup.geometry("150x50")
