@@ -1,11 +1,22 @@
 import os
 import json
+import requests
 
+url = "https://wolnelektury.pl/api/books/?format=json"
+response = requests.get(f"{url}")
+data = response.json()
 
 class Library:
     def __init__(self):
         self.database = {"books": [], "users": [{"login": "admin", "password": "admin"}], "registry": []}
+        self.load_books()
         self.setup()
+
+    def load_books(self):
+        # API can return ~6000 books, for this project i take only 60 of them to test it.
+        for book in data[:60]:
+            self.database["books"].append({"title": book['title'], "author": book['author'], "genre": book['genre'], "borrow": "No"})
+
 
     def setup(self):
         cwd = os.getcwd()
@@ -36,7 +47,8 @@ class Library:
                 pass
         return books
 
-    def borrow(self, user,book):
+    def borrow(self, user,books_to_borrow):
+        for book in books_to_borrow:
             for i in self.database["books"]:
                 if i["title"] == book:
                     i["borrow"] = "Yes"
@@ -73,7 +85,6 @@ class Library:
                     if login == "admin" and password == "admin":
                         return "admin"
                     return True
-
             return False
 
     def password_available(self, user_password):
@@ -97,7 +108,6 @@ class Library:
                     return True
 
     def register_user(self,user_name,user_password):
-
         if self.login_available(user_name) and self.password_available(user_password):
             self.database["users"].append({"login": user_name, "password": user_password})
             self.open_json_file()
@@ -110,10 +120,10 @@ class Library:
                 return False
         return True
 
-    def add_new_book(self,book_title,book_author,book_pages):
-                self.database['books'].append({"title": book_title, "author": book_author, "pages": book_pages, "borrow": "No"})
+    def add_new_book(self,book_title,book_author,book_genre):
+                self.database['books'].append({"title": book_title, "author": book_author, "genre": book_genre, "borrow": "No"})
                 print(self.database)
                 self.open_json_file()
-                print(f"Title:'{book_title}', Author:'{book_author}', pages:'{book_pages}' - successful added to Library")
+                print(f"Title:'{book_title}', Author:'{book_author}', genre:'{book_genre}' - successful added to Library")
 
 
