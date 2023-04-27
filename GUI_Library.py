@@ -375,5 +375,7 @@ class GuiImainPage:
 			   command=change_users_password).pack()
 
 
+# Button(admin_interface, text="LOGOUT", height="1", width="15",
+#        command=lambda: self.DESTROY_PAGE(destroy_page=admin_interface, return_page=self.root)).pack(pady=20)
 
 GuiImainPage()
